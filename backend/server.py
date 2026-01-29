@@ -8,7 +8,10 @@ CORS(app)
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
-current_browser_url = ""
+current_state = {
+    "url": "",
+    "browser_active": False
+}
 
 @app.route('/update-url', methods=['POST'])
 def update_url():
@@ -18,9 +21,9 @@ def update_url():
     data = request.json
     
     if data and 'url' in data:
-        current_browser_url = data['url']
-        print(f"[Server] Received URL: {current_browser_url}")
-        return jsonify({"status": "captured"}), 200
+        current_state['url'] = data['url']
+        # print(f"Browser looking at: {data['url']}")
+        return jsonify({"status": "ok"}), 200
     
     return jsonify({"status": "error", "message": "No URL provided"}), 400
 
@@ -29,5 +32,5 @@ def health_check():
     return "academicActivityTracer Server is Running!"
 
 if __name__ == '__main__':
-    print("Server Running on PORT:5000")
+    print("Server Running")
     app.run(port=5000, debug=True)
