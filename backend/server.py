@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import logging
+from src.db import fetchTime
 
 app = Flask(__name__)
 CORS(app)
@@ -17,15 +18,23 @@ current_state = {
 def update_url():
     global current_browser_url
     
-    # Store JSON data sent by the extension
     data = request.json
     
     if data and 'url' in data:
         current_state['url'] = data['url']
-        # print(f"Browser looking at: {data['url']}")
+        print(f"Browser looking at: {data['url']}")
         return jsonify({"status": "ok"}), 200
     
     return jsonify({"status": "error", "message": "No URL provided"}), 400
+
+@app.route('/get-current-url', methods=['GET'])
+def get_current_url():
+    return jsonify({"url": current_state['url']}), 200
+
+@app.route('/get-seconds', methods=['GET'])
+def getSeconds():
+    seconds = fetchTime()
+    return jsonify({"seconds": seconds}), 200
 
 @app.route('/', methods=['GET'])
 def health_check():

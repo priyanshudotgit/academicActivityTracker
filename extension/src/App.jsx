@@ -3,7 +3,16 @@ import { useState, useEffect } from 'react';
 function App() {
   const [isTracking, setIsTracking] = useState(true);
   const [currentHost, setCurrentHost] = useState("Loading...");
-  const [sessionTime, setSessionTime] = useState("");
+  const [sessionTime, setSessionTime] = useState(0);
+
+  const formatTime = (totalSeconds) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    
+    const pad = (num) => num.toString().padStart(2, '0');
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  };
 
   useEffect(() => {
     // Load saved state
@@ -21,6 +30,28 @@ function App() {
         }
       }
     });
+
+    // fetch time
+    const fetchTime = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/get-seconds");
+        if(response.ok){
+          const data = await response.json();
+          setSessionTime(data.seconds);
+        }
+        else{
+          console.log("Fetch failed!")
+        }
+      } catch (error) {
+        console.log("ERR::FetchTime: ", error);
+        return;
+      }
+    }
+
+    fetchTime();
+
+    const interval = setInterval(fetchTime, 2000);
+    return () => clearInterval(interval);
   }, []);
 
   const toggleTracking = () => {
@@ -59,14 +90,14 @@ function App() {
 
         <div className="bg-gray-800 p-3 rounded border border-gray-700 opacity-60">
           <p className="text-gray-400 text-xs uppercase mb-1">Session Time</p>
-          <p className="font-mono text-sm">00:12:45</p>
+          <p className="font-mono text-sm">{formatTime(sessionTime)}</p>
         </div>
       </div>
 
-      {/* Reset Timer */}
+      {/* Reset Timer
       <div className={`text-center py-2 rounded mb-4 text-xs font-bold tracking-wider uppercase ${isTracking ? 'bg-indigo-600' : 'bg-gray-600'}`}>
         <button>Reset Timer</button>
-      </div>
+      </div> */}
 
       {/* Footer */}
       <div className="mt-auto pt-4 text-center">
